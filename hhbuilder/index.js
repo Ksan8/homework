@@ -1,10 +1,12 @@
 var householdArray = [];
 var form = document.forms[0];
+var household = document.querySelector('ol.household');
 var addButton = document.querySelector('button.add');
 var submitButton = document.querySelector('button[type=submit]');
 var ageValid = false;
 var relationshipValid = false;
-var deleteButton, age, relationship, checkbox, smoker, household;
+var memberCount = 0;
+var deleteButton, age, relationship, checkbox, smoker, selectBoxes, toDelete;
 
 init();
 
@@ -22,14 +24,27 @@ function validateForm() {
 			addPerson();
 		}
 	});
-
+	// Create `delete` button and insert in DOM after `add` button
 	deleteButton = document.createElement('button');
 	var deleteText = document.createTextNode('delete');
 	deleteButton.appendChild(deleteText);
-	// TODO: insert into DOM after `Add` button
-
-	// console.log(submitButton);
-
+	var parentDiv = addButton.parentNode;
+	parentDiv.insertBefore(deleteButton, addButton.nextSibling);
+	// Clicking on the `delete` button deletes selected members
+	deleteButton.addEventListener('click', function(){
+		selectBoxes = document.getElementsByName('select-box');
+		// if box is checked when `delete` is clicked, list item will be removed
+		for (var i = 0; i < selectBoxes.length; i++) {
+			if (selectBoxes[i].checked) {
+				// get id of `li` item and use as index (need to subtract 1)
+				var index = selectBoxes[i].parentNode.id - 1;
+				// remove `li` item
+				household.removeChild(selectBoxes[i].parentNode);
+				// use id to remove correct member from `householdArray`
+				householdArray.splice(index,1);
+			}
+		}
+	});
 
 	form.addEventListener('submit', function(e){
 		// TODO: fill in JSON mock-server data
@@ -42,7 +57,6 @@ function validateAge() {
 	// Validate age if an input is entered and it is > 0
 	if (age && age > 0) {
 		ageValid = true;
-		console.log('age validated');
 	} else {
 		ageValid = false;
 		alert("Please enter a valid age");
@@ -55,7 +69,6 @@ function validateRelationship() {
 	// Validate relationship if an option is chosen
 	if (relationship) {
 		relationshipValid = true;
-		console.log('relationship validated');
 	} else {
 		relationshipValid = false;
 		alert("Please select the relationship of this person to you");
@@ -63,6 +76,7 @@ function validateRelationship() {
 }
 
 function addPerson() {
+	memberCount++;
 	var newMember = {
 		age: age,
 		relationship: relationship
@@ -79,11 +93,12 @@ function addPerson() {
 	// Add new household member to array
 	householdArray.push(newMember);
 	// Add list item for new member
-	household = document.querySelector('ol.household');
 	var newEntry = document.createElement('li');
+	newEntry.id = memberCount;
 	// Add a checkbox to the beginning of the new entry
 	var entryCheckbox = document.createElement('input');
   entryCheckbox.type = 'checkbox';
+  entryCheckbox.name = 'select-box';
 	newEntry.appendChild(entryCheckbox);
 	// Add member's info
 	newEntry.appendChild(document.createTextNode(
