@@ -3,14 +3,23 @@ var form = document.forms[0];
 var household = document.querySelector('ol.household');
 var addButton = document.querySelector('button.add');
 var submitButton = document.querySelector('button[type=submit]');
+var jsonDiv = document.querySelector('pre.debug');
 var ageValid = false;
 var relationshipValid = false;
-var memberCount = 0;
+var memberCount = 0; // used as id when creating new member `li` item
 var deleteButton, age, relationship, checkbox, smoker, selectBoxes, toDelete;
 
 init();
 
 function init() {
+	// Create `delete` button and insert in DOM after `add` button
+	deleteButton = document.createElement('button');
+	var deleteText = document.createTextNode('delete');
+	deleteButton.className = 'delete';
+	deleteButton.appendChild(deleteText);
+	var parentDiv = addButton.parentNode;
+	parentDiv.insertBefore(deleteButton, addButton.nextSibling);
+	// Add all event listeners for form elements
 	validateForm();
 }
 
@@ -19,37 +28,20 @@ function validateForm() {
 	addButton.addEventListener('click', function(){
 		validateAge();
 		validateRelationship();
-		// add household member if age and relationship are validated
+		// Add household member if age and relationship are validated
 		if (ageValid && relationshipValid) {
 			addPerson();
 		}
 	});
-	// Create `delete` button and insert in DOM after `add` button
-	deleteButton = document.createElement('button');
-	var deleteText = document.createTextNode('delete');
-	deleteButton.appendChild(deleteText);
-	var parentDiv = addButton.parentNode;
-	parentDiv.insertBefore(deleteButton, addButton.nextSibling);
-	// Clicking on the `delete` button deletes selected members
-	deleteButton.addEventListener('click', function(){
-		selectBoxes = document.getElementsByName('select-box');
-		// if box is checked when `delete` is clicked, list item will be removed
-		for (var i = 0; i < selectBoxes.length; i++) {
-			if (selectBoxes[i].checked) {
-				// get id of `li` item and use as index (need to subtract 1)
-				var index = selectBoxes[i].parentNode.id - 1;
-				// remove `li` item
-				household.removeChild(selectBoxes[i].parentNode);
-				// use id to remove correct member from `householdArray`
-				householdArray.splice(index,1);
-			}
-		}
-	});
 
+	// Clicking on the `delete` button deletes selected members
+	deleteButton.addEventListener('click', removePerson);
+	// Prevent default action for `submit` button
 	form.addEventListener('submit', function(e){
-		// TODO: fill in JSON mock-server data
 	 	e.preventDefault();
 	});
+	// Clicking on the `submit` button returns mock-server JSON data
+	submitButton.addEventListener('click', createMockData);
 }
 
 function validateAge() {
@@ -64,7 +56,6 @@ function validateAge() {
 }
 
 function validateRelationship() {
-	// relationship = document.querySelector('[name=rel]').value;
 	relationship = document.querySelector('[name=rel]').value;
 	// Validate relationship if an option is chosen
 	if (relationship) {
@@ -108,10 +99,29 @@ function addPerson() {
 }
 
 function removePerson() {
-	console.log('person removed');
-
+	console.log('removePerson triggered');
+	selectBoxes = document.getElementsByName('select-box');
+	// If box is checked when `delete` is clicked, list item will be removed
+	for (var i = 0; i < selectBoxes.length; i++) {
+		if (selectBoxes[i].checked) {
+			// Get id of `li` item and use as index (need to subtract 1)
+			var index = selectBoxes[i].parentNode.id - 1;
+			// Remove `li` item
+			household.removeChild(selectBoxes[i].parentNode);
+			// Use id to remove correct member from `householdArray`
+			householdArray.splice(index,1);
+		}
+	}
 }
 
-// TODO:
-// Remove a previously added person from the list
-// Serialize the household as JSON upon form submission as a fake trip to the server
+function createMockData() {
+	// Go through `householdArray` and stringify each element; add to `jsonDiv`
+	for (var i = 0; i < householdArray.length; i++) {
+		var text = JSON.stringify(householdArray[i]);
+		var mockJSON = document.createElement('p');
+		var mockText = document.createTextNode(text);
+		mockJSON.appendChild(mockText);
+		jsonDiv.appendChild(mockJSON);
+	}
+	jsonDiv.style.display = 'block';
+}
