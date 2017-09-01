@@ -99,7 +99,6 @@ function addPerson() {
 }
 
 function removePerson() {
-	console.log('removePerson triggered');
 	selectBoxes = document.getElementsByName('select-box');
 	// If box is checked when `delete` is clicked, list item will be removed
 	for (var i = 0; i < selectBoxes.length; i++) {
@@ -115,6 +114,12 @@ function removePerson() {
 }
 
 function createMockData() {
+	// Remove previous data if it exists
+	if (jsonDiv.hasChildNodes()) {
+		while (jsonDiv.firstChild) {
+	    jsonDiv.removeChild(jsonDiv.firstChild);
+		}
+	}
 	// Go through `householdArray` and stringify each element; add to `jsonDiv`
 	for (var i = 0; i < householdArray.length; i++) {
 		var text = JSON.stringify(householdArray[i]);
